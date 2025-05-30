@@ -563,10 +563,6 @@ def main():
     alphas = [alpha1, alpha2, alpha3]
     strategy_names = ['Gene 1: Volume-based Long-Short', 'Gene 2: Open-Close Reversal', 'Gene 3: Multi-Timeframe Momentum']
     
-    print("\n" + "="*80)
-    print("COMPREHENSIVE PERFORMANCE ANALYSIS")
-    print("="*80)
-    
     print("1. Plotting combined returns with S&P 500 benchmark")
     plot_combined_returns_with_benchmark(alphas, strategy_names, spy_returns)
     
@@ -588,7 +584,7 @@ def main():
     print("7. Plotting return distributions and QQ plots")
     plot_return_distributions_and_qq(alphas, strategy_names)
     
-    # Permuted data analysis (if available)
+    ##
     try:
         print("8. Loading permuted datasets for comparison")
         permuted_datasets = load_pickle("permute.obj")
@@ -620,18 +616,11 @@ def main():
     print("9. Generating comprehensive results table")
     comprehensive_results = create_comprehensive_results_table(alphas, strategy_names)
     
-    print("\n" + "="*120)
-    print("COMPREHENSIVE RESULTS WITH STATISTICAL TESTS")
-    print("="*120)
     with pd.option_context('display.max_columns', None, 'display.width', None, 'display.max_colwidth', None):
         print(comprehensive_results.to_string(index=False))
     
-    comprehensive_results.to_csv('./results_with_statistical_tests.csv', index=False)
-    print(f"\nResults saved to './results_with_statistical_tests.csv'")
+    # comprehensive_results.to_csv('./results_with_statistical_tests.csv', index=False)
     
-    print("\n" + "="*80)
-    print("ANALYSIS COMPLETE")
-    print("="*80)
     print("Generated files:")
     print("- ./images/combined_returns_with_benchmark.png")
     print("- ./images/correlation_heatmap.png") 

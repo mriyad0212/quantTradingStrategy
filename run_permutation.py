@@ -18,10 +18,7 @@ import pytz
 from quantlab.utils import load_pickle, save_pickle
 from quantlab.gene import *
 
-def check_requirements():
-    """Check if all required files and dependencies exist"""
-    print("Checking requirements...")
-    
+def check_requirements():    
     required_files = ['permute.obj', 'quantlab/']
     missing_files = []
     
@@ -31,7 +28,6 @@ def check_requirements():
     
     if missing_files:
         print(f"Missing required files: {missing_files}")
-        print("Note: permute.obj should contain pre-generated permuted datasets")
         return False
     
     try:
@@ -39,7 +35,6 @@ def check_requirements():
         import pandas
         from quantlab.utils import load_pickle, save_pickle
         from quantlab.gene import Gene, GeneticAlpha
-        print("All dependencies available ✓")
     except ImportError as e:
         print(f"Missing dependency: {e}")
         return False
@@ -47,13 +42,8 @@ def check_requirements():
     return True
 
 def test_strategies_on_permuted_data(permuted_ticker_dfs, tickers, period_start, period_end):
-    """Test the 3 strategies from main.py on permuted data using exact same methodology"""
-    
-    # Add derived columns for each ticker (same as main.py)
     for ticker in tickers:
         permuted_ticker_dfs.update({ticker+"_"+k: v for k, v in permuted_ticker_dfs[ticker].to_dict(orient="series").items()})
-    
-    # Define the exact same 3 strategies from main.py
     strategies = [
         {
             'name': 'Gene 1: Volume-based Long-Short',
@@ -76,26 +66,17 @@ def test_strategies_on_permuted_data(permuted_ticker_dfs, tickers, period_start,
     
     for strategy in strategies:
         try:
-            # Create gene and alpha using exact same methodology as main.py
             gene = Gene.str_to_gene(strategy['gene_str'])
             alpha = GeneticAlpha(insts=tickers, dfs=permuted_ticker_dfs, start=period_start, end=period_end, genome=gene)
             df = alpha.run_simulation()
-            
-            # Get performance stats using same methodology as main.py
             perf = alpha.get_perf_stats(plot=False, gene_factor=strategy['gene_factor'])
-            
-            # Extract key performance metrics (same as main.py calculations)
             capital_ret = alpha.get_zero_filtered_stats()["capital_ret"]
             annual_return = capital_ret.mean() * 252
             annual_vol = capital_ret.std() * np.sqrt(252)
             sharpe_ratio = annual_return / annual_vol if annual_vol != 0 else 0
-            
             cumulative = (1 + capital_ret).cumprod()
             max_dd = (cumulative / cumulative.cummax() - 1).min()
-            
             final_cumulative_return = cumulative.iloc[-1] - 1
-            
-            # Get hypothesis tests (same as main.py)
             hyp_tests = alpha.get_hypothesis_tests()
             
             results[strategy['name']] = {
@@ -127,49 +108,35 @@ def test_strategies_on_permuted_data(permuted_ticker_dfs, tickers, period_start,
     return results
 
 def test_strategies_on_all_permuted_datasets():
-    """Test strategies on all permuted datasets using exact same methodology as main.py"""
-    print("Loading permuted datasets from permute.obj...")
-    
     try:
         permuted_datasets = load_pickle("permute.obj")
         print(f"Loaded {len(permuted_datasets)} permuted datasets")
     except Exception as e:
         print(f"Error loading permute.obj: {e}")
-        print("Make sure permute.obj exists and contains permuted datasets")
         return
     
-    # Use same parameters as main.py
     period_start = datetime(2000, 1, 1, tzinfo=pytz.utc)
     period_end = datetime(2023, 1, 1, tzinfo=pytz.utc)
     
-    # Get the first 50 tickers (same as main.py)
-    # Assuming the permuted datasets contain the same ticker structure
     first_permuted = permuted_datasets[0]
     tickers = list(first_permuted.keys())[:50]
-    
-    print(f"Testing 3 strategies on {len(permuted_datasets)} permuted datasets...")
-    print(f"Using {len(tickers)} tickers...")
-    print("This will take approximately 30-60 minutes...")
     
     permuted_results = []
     
     for i, permuted_ticker_dfs in enumerate(permuted_datasets):
         if (i + 1) % 50 == 0 or i < 10:
-            print(f"Processing permuted dataset {i+1}/{len(permuted_datasets)}...")
+            print(f"Processing permuted dataset {i+1}/{len(permuted_datasets)}")
         
-        # Test strategies on this permuted dataset
         strategy_results = test_strategies_on_permuted_data(
             permuted_ticker_dfs, tickers, period_start, period_end
         )
         
         permuted_results.append(strategy_results)
     
-    print("Saving permuted strategy results to permute_results.obj...")
     save_pickle("permute_results.obj", permuted_results)
     
-    print(f"Successfully tested strategies on {len(permuted_results)} permuted datasets!")
+    print(f"Successfully tested strategies on {len(permuted_results)} permuted datasets")
     
-    # Print summary statistics
     print("\n" + "="*80)
     print("PERMUTED RESULTS SUMMARY")
     print("="*80)
@@ -207,11 +174,9 @@ def print_results():
         print("No results file found")
 
 def main():
-    # Check requirements
     if not check_requirements():
         return
-    
-    # Check if permute_results.obj already exists
+
     if Path("permute_results.obj").exists():
         response = input("Do you want to regenerate it? (y/n): ").lower().strip()
         if response not in ['y', 'yes']:

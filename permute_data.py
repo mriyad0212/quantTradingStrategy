@@ -8,14 +8,11 @@ from copy import deepcopy
 import time
 
 def load_original_data():
-    print("Loading original dataset...")
     tickers, ticker_dfs = load_pickle("dataset.obj")
     print(f"Loaded data for {len(tickers)} tickers")
     return tickers, ticker_dfs
 
 def create_permuted_dataset(tickers, ticker_dfs, permutation_id):
-    print(f"Creating permuted dataset {permutation_id}...")
-    
     bars = []
     valid_tickers = []
     
@@ -26,7 +23,6 @@ def create_permuted_dataset(tickers, ticker_dfs, permutation_id):
                 bars.append(df[["open", "high", "low", "close", "volume"]].copy())
                 valid_tickers.append(ticker)
     
-    print(f"Permuting {len(bars)} valid ticker datasets...")
     permuted_bars = permute_multi_bars(bars)
     
     permuted_ticker_dfs = {}
@@ -60,27 +56,13 @@ def generate_permuted_datasets(n_permutations):
     print(f"\nGenerated {len(permuted_datasets)} permuted datasets")
     return permuted_datasets
 
-def main():
-    print("="*60)
-    print("PERMUTED DATASET GENERATOR")
-    print("="*60)
-    
+def main():    
     n_permutations = 5
-    print(f"Generating {n_permutations} permuted datasets...")
     
     try:
         permuted_datasets = generate_permuted_datasets(n_permutations)
         
-        print(f"\nSaving {len(permuted_datasets)} permuted datasets to permute.obj...")
         save_pickle("permute.obj", permuted_datasets)
-        
-        print("="*60)
-        print("PERMUTATION COMPLETE")
-        print("="*60)
-        print(f"Successfully generated and saved {len(permuted_datasets)} permuted datasets")
-        print("File saved as: permute.obj")
-        
-        print("\nDataset Statistics:")
         if permuted_datasets:
             sample_dataset = permuted_datasets[0]
             print(f"- Number of tickers per dataset: {len(sample_dataset)}")
