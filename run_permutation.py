@@ -110,7 +110,6 @@ def test_strategies_on_permuted_data(permuted_ticker_dfs, tickers, period_start,
 def test_strategies_on_all_permuted_datasets():
     try:
         permuted_datasets = load_pickle("permute.obj")
-        print(f"Loaded {len(permuted_datasets)} permuted datasets")
     except Exception as e:
         print(f"Error loading permute.obj: {e}")
         return
@@ -133,14 +132,7 @@ def test_strategies_on_all_permuted_datasets():
         
         permuted_results.append(strategy_results)
     
-    save_pickle("permute_results.obj", permuted_results)
-    
-    print(f"Successfully tested strategies on {len(permuted_results)} permuted datasets")
-    
-    print("\n" + "="*80)
-    print("PERMUTED RESULTS SUMMARY")
-    print("="*80)
-    
+    save_pickle("permute_results.obj", permuted_results)    
     for strategy_name in ['Gene 1: Volume-based Long-Short', 'Gene 2: Open-Close Reversal', 'Gene 3: Multi-Timeframe Momentum']:
         print(f"\n{strategy_name}:")
         strategy_data = [result[strategy_name] for result in permuted_results if not pd.isna(result[strategy_name]['sharpe_ratio'])]

@@ -563,38 +563,35 @@ def main():
     alphas = [alpha1, alpha2, alpha3]
     strategy_names = ['Gene 1: Volume-based Long-Short', 'Gene 2: Open-Close Reversal', 'Gene 3: Multi-Timeframe Momentum']
     
-    print("1. Plotting combined returns with S&P 500 benchmark")
+    print("Plotting combined returns with S&P 500 benchmark")
     plot_combined_returns_with_benchmark(alphas, strategy_names, spy_returns)
     
-    print("2. Plotting return correlation heatmap")
+    print("Plotting return correlation heatmap")
     correlation_matrix = plot_return_correlation_heatmap(alphas, strategy_names)
     
-    print("3. Plotting rolling drawdown")
+    print("Plotting rolling drawdown")
     plot_rolling_drawdown(alphas, strategy_names)
     
-    print("4. Plotting rolling Calmar ratio")
+    print("Plotting rolling Calmar ratio")
     plot_rolling_calmar(alphas, strategy_names)
     
-    print("5. Plotting rolling volatility")
+    print("Plotting rolling volatility")
     plot_rolling_volatility(alphas, strategy_names)
     
-    print("6. Plotting rolling Sharpe ratio")
+    print("Plotting rolling Sharpe ratio")
     plot_rolling_sharpe(alphas, strategy_names)
     
-    print("7. Plotting return distributions and QQ plots")
+    print("Plotting return distributions and QQ plots")
     plot_return_distributions_and_qq(alphas, strategy_names)
     
     ##
     try:
-        print("8. Loading permuted datasets for comparison")
         permuted_datasets = load_pickle("permute.obj")
-        print(f"Loaded {len(permuted_datasets)} permuted datasets")
         
         selected_permuted = np.random.choice(len(permuted_datasets), 5, replace=False)
         permuted_results_list = []
         
         for perm_idx in selected_permuted:
-            print(f"   Running strategies on permuted dataset {perm_idx}")
             perm_ticker_dfs = permuted_datasets[perm_idx]
             
             for ticker in tickers:
@@ -610,10 +607,9 @@ def main():
         plot_permuted_vs_actual_performance(alphas, strategy_names, permuted_results_list)
         
     except FileNotFoundError:
-        print("8. permute.obj not found. Run 'python run_permutation.py' to generate permuted datasets.")
-        print("   Skipping permuted data comparison")
+        print("permute.obj not found.")
     
-    print("9. Generating comprehensive results table")
+    print("Generating comprehensive results table")
     comprehensive_results = create_comprehensive_results_table(alphas, strategy_names)
     
     with pd.option_context('display.max_columns', None, 'display.width', None, 'display.max_colwidth', None):
@@ -621,31 +617,31 @@ def main():
     
     # comprehensive_results.to_csv('./results_with_statistical_tests.csv', index=False)
     
-    print("Generated files:")
-    print("- ./images/combined_returns_with_benchmark.png")
-    print("- ./images/correlation_heatmap.png") 
-    print("- ./images/rolling_drawdown.png")
-    print("- ./images/rolling_calmar.png")
-    print("- ./images/rolling_volatility.png")
-    print("- ./images/rolling_sharpe.png")
-    print("- ./images/return_distribution_qq_1.png")
-    print("- ./images/return_distribution_qq_2.png")
-    print("- ./images/return_distribution_qq_3.png")
-    if Path("permute.obj").exists():
-        print("- ./images/actual_vs_permuted_performance.png")
-    print("- ./results_with_statistical_tests.csv")
+    # print("Generated files:")
+    # print("- ./images/combined_returns_with_benchmark.png")
+    # print("- ./images/correlation_heatmap.png") 
+    # print("- ./images/rolling_drawdown.png")
+    # print("- ./images/rolling_calmar.png")
+    # print("- ./images/rolling_volatility.png")
+    # print("- ./images/rolling_sharpe.png")
+    # print("- ./images/return_distribution_qq_1.png")
+    # print("- ./images/return_distribution_qq_2.png")
+    # print("- ./images/return_distribution_qq_3.png")
+    # if Path("permute.obj").exists():
+    #     print("- ./images/actual_vs_permuted_performance.png")
+    # print("- ./results_with_statistical_tests.csv")
     
-    print("\nStrategy Return Correlations:")
-    print(correlation_matrix)
+    # print("\nStrategy Return Correlations:")
+    # print(correlation_matrix)
     
-    print(f"\nTransaction Cost Regime Information:")
-    print(f"S&P 500 volatility mean: {spy_volatility.mean():.3f}")
-    print(f"S&P 500 volatility std: {spy_volatility.std():.3f}")
-    print("Transaction cost regimes applied:")
-    print("- Low vol (<0.15): 0.2% transaction cost")
-    print("- Normal (0.15-0.25): 0.35% transaction cost")
-    print("- Walking on ice (0.25-0.35): 0.4% transaction cost") 
-    print("- Crisis (>0.35): 0.5% transaction cost")
+    # print(f"\nTransaction Cost Regime Information:")
+    # print(f"S&P 500 volatility mean: {spy_volatility.mean():.3f}")
+    # print(f"S&P 500 volatility std: {spy_volatility.std():.3f}")
+    # print("Transaction cost regimes applied:")
+    # print("- Low vol (<0.15): 0.2% transaction cost")
+    # print("- Normal (0.15-0.25): 0.35% transaction cost")
+    # print("- Walking on ice (0.25-0.35): 0.4% transaction cost") 
+    # print("- Crisis (>0.35): 0.5% transaction cost")
     
     # Calculate volatility regime distribution
     low_vol_pct = (spy_volatility < 0.15).sum() / len(spy_volatility) * 100
