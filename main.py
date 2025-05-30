@@ -659,9 +659,3 @@ def main():
 
 if __name__ == "__main__":
     results = main()
-
-<<<<<<< HEAD
-##### This is test
-=======
-#### This is main
->>>>>>> main
