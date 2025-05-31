@@ -206,7 +206,12 @@ def apply_transaction_costs(returns, positions, spy_volatility):
 
 def plot_combined_returns_with_benchmark(alphas, strategy_names, spy_returns):
     """Plot combined returns including S&P 500 benchmark"""
-    plt.figure(figsize=(15, 10))
+    n_strategies = len(alphas)
+    
+    # Use a colormap for better color distribution
+    colors = plt.cm.tab10(np.linspace(0, 1, n_strategies)) if n_strategies <= 10 else plt.cm.tab20(np.linspace(0, 1, n_strategies))
+    
+    plt.figure(figsize=(18, 12))
     
     plt.subplot(2, 1, 1)
     
@@ -215,20 +220,20 @@ def plot_combined_returns_with_benchmark(alphas, strategy_names, spy_returns):
         capital_ret = alpha.get_zero_filtered_stats()["capital_ret"]
         cumulative_returns = (1 + capital_ret).cumprod()
         plt.plot(cumulative_returns.index, cumulative_returns.values, 
-                label=f'{name}', linewidth=2)
+                label=f'{name}', linewidth=2, color=colors[i])
     
     # Plot S&P 500 benchmark (only if data is available)
     if len(spy_returns) > 0:
         spy_cumulative = (1 + spy_returns).cumprod()
         plt.plot(spy_cumulative.index, spy_cumulative.values, 
-                label='S&P 500 (Buy & Hold)', linewidth=2, color='black', linestyle='--')
+                label='S&P 500 (Buy & Hold)', linewidth=3, color='black', linestyle='--')
         title_suffix = " vs S&P 500"
     else:
         title_suffix = ""
     
-    plt.title(f'Combined Cumulative Returns - All Strategies{title_suffix}', fontsize=14)
+    plt.title(f'Combined Cumulative Returns - All {n_strategies} Strategies{title_suffix}', fontsize=16)
     plt.ylabel('Cumulative Return')
-    plt.legend()
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.grid(True, alpha=0.3)
     plt.yscale('log')
     
@@ -236,17 +241,17 @@ def plot_combined_returns_with_benchmark(alphas, strategy_names, spy_returns):
     for i, (alpha, name) in enumerate(zip(alphas, strategy_names)):
         capital_ret = alpha.get_zero_filtered_stats()["capital_ret"]
         plt.plot(capital_ret.index, capital_ret.values, 
-                label=f'{name}', linewidth=1, alpha=0.7)
+                label=f'{name}', linewidth=1, alpha=0.7, color=colors[i])
     
     # Plot S&P 500 daily returns (only if data is available)
     if len(spy_returns) > 0:
         plt.plot(spy_returns.index, spy_returns.values, 
-                label='S&P 500', linewidth=1, alpha=0.7, color='black', linestyle='--')
+                label='S&P 500', linewidth=2, alpha=0.8, color='black', linestyle='--')
     
-    plt.title(f'Daily Returns - All Strategies{title_suffix}', fontsize=14)
+    plt.title(f'Daily Returns - All {n_strategies} Strategies{title_suffix}', fontsize=16)
     plt.ylabel('Daily Return')
     plt.xlabel('Date')
-    plt.legend()
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.grid(True, alpha=0.3)
     
     plt.tight_layout()
@@ -256,18 +261,21 @@ def plot_combined_returns_with_benchmark(alphas, strategy_names, spy_returns):
 
 def plot_rolling_drawdown(alphas, strategy_names, window=63):
     """Create rolling drawdown plot"""
-    plt.figure(figsize=(15, 8))
+    n_strategies = len(alphas)
+    colors = plt.cm.tab10(np.linspace(0, 1, n_strategies)) if n_strategies <= 10 else plt.cm.tab20(np.linspace(0, 1, n_strategies))
+    
+    plt.figure(figsize=(18, 10))
     for i, (alpha, name) in enumerate(zip(alphas, strategy_names)):
         capital_ret = alpha.get_zero_filtered_stats()["capital_ret"]
         cumulative = (1 + capital_ret).cumprod()
         rolling_max = cumulative.rolling(window, min_periods=1).max()
         drawdown = (cumulative - rolling_max) / rolling_max
-        plt.plot(drawdown.index, drawdown.values, label=f'{name}', linewidth=2)
+        plt.plot(drawdown.index, drawdown.values, label=f'{name}', linewidth=2, color=colors[i])
     
-    plt.title(f'Rolling Maximum Drawdown ({window}-day window)', fontsize=14)
+    plt.title(f'Rolling Maximum Drawdown ({window}-day window) - {n_strategies} Strategies', fontsize=16)
     plt.ylabel('Drawdown')
     plt.xlabel('Date')
-    plt.legend()
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.savefig('./images/rolling_drawdown.png', dpi=300, bbox_inches='tight')
@@ -275,7 +283,10 @@ def plot_rolling_drawdown(alphas, strategy_names, window=63):
 
 def plot_rolling_calmar(alphas, strategy_names, window=63):
     """Create rolling Calmar ratio plot"""
-    plt.figure(figsize=(15, 8))
+    n_strategies = len(alphas)
+    colors = plt.cm.tab10(np.linspace(0, 1, n_strategies)) if n_strategies <= 10 else plt.cm.tab20(np.linspace(0, 1, n_strategies))
+    
+    plt.figure(figsize=(18, 10))
     for i, (alpha, name) in enumerate(zip(alphas, strategy_names)):
         capital_ret = alpha.get_zero_filtered_stats()["capital_ret"]
         
@@ -290,12 +301,12 @@ def plot_rolling_calmar(alphas, strategy_names, window=63):
         
         # Calmar ratio = Annual Return / Max Drawdown
         calmar_ratio = rolling_return / max_drawdown.replace(0, np.nan)
-        plt.plot(calmar_ratio.index, calmar_ratio.values, label=f'{name}', linewidth=2)
+        plt.plot(calmar_ratio.index, calmar_ratio.values, label=f'{name}', linewidth=2, color=colors[i])
     
-    plt.title(f'Rolling Calmar Ratio ({window}-day window)', fontsize=14)
+    plt.title(f'Rolling Calmar Ratio ({window}-day window) - {n_strategies} Strategies', fontsize=16)
     plt.ylabel('Calmar Ratio')
     plt.xlabel('Date')
-    plt.legend()
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.savefig('./images/rolling_calmar.png', dpi=300, bbox_inches='tight')
@@ -303,16 +314,19 @@ def plot_rolling_calmar(alphas, strategy_names, window=63):
 
 def plot_rolling_volatility(alphas, strategy_names, window=63):
     """Create rolling annualized volatility plot"""
-    plt.figure(figsize=(15, 8))
+    n_strategies = len(alphas)
+    colors = plt.cm.tab10(np.linspace(0, 1, n_strategies)) if n_strategies <= 10 else plt.cm.tab20(np.linspace(0, 1, n_strategies))
+    
+    plt.figure(figsize=(18, 10))
     for i, (alpha, name) in enumerate(zip(alphas, strategy_names)):
         capital_ret = alpha.get_zero_filtered_stats()["capital_ret"]
         rolling_vol = capital_ret.rolling(window).std() * np.sqrt(252)
-        plt.plot(rolling_vol.index, rolling_vol.values, label=f'{name}', linewidth=2)
+        plt.plot(rolling_vol.index, rolling_vol.values, label=f'{name}', linewidth=2, color=colors[i])
     
-    plt.title(f'Rolling Annualized Volatility ({window}-day window)', fontsize=14)
+    plt.title(f'Rolling Annualized Volatility ({window}-day window) - {n_strategies} Strategies', fontsize=16)
     plt.ylabel('Annualized Volatility')
     plt.xlabel('Date')
-    plt.legend()
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.savefig('./images/rolling_volatility.png', dpi=300, bbox_inches='tight')
@@ -320,18 +334,21 @@ def plot_rolling_volatility(alphas, strategy_names, window=63):
 
 def plot_rolling_sharpe(alphas, strategy_names, window=63):
     """Create rolling Sharpe ratio plot"""
-    plt.figure(figsize=(15, 8))
+    n_strategies = len(alphas)
+    colors = plt.cm.tab10(np.linspace(0, 1, n_strategies)) if n_strategies <= 10 else plt.cm.tab20(np.linspace(0, 1, n_strategies))
+    
+    plt.figure(figsize=(18, 10))
     for i, (alpha, name) in enumerate(zip(alphas, strategy_names)):
         capital_ret = alpha.get_zero_filtered_stats()["capital_ret"]
         rolling_mean = capital_ret.rolling(window).mean() * 252
         rolling_std = capital_ret.rolling(window).std() * np.sqrt(252)
         rolling_sharpe = rolling_mean / rolling_std
-        plt.plot(rolling_sharpe.index, rolling_sharpe.values, label=f'{name}', linewidth=2)
+        plt.plot(rolling_sharpe.index, rolling_sharpe.values, label=f'{name}', linewidth=2, color=colors[i])
     
-    plt.title(f'Rolling Sharpe Ratio ({window}-day window)', fontsize=14)
+    plt.title(f'Rolling Sharpe Ratio ({window}-day window) - {n_strategies} Strategies', fontsize=16)
     plt.ylabel('Sharpe Ratio')
     plt.xlabel('Date')
-    plt.legend()
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.savefig('./images/rolling_sharpe.png', dpi=300, bbox_inches='tight')
@@ -379,76 +396,259 @@ def plot_return_distributions_and_qq(alphas, strategy_names):
         plt.show()
 
 def plot_return_correlation_heatmap(alphas, strategy_names):
-    """Create a correlation heatmap for the returns of multiple strategies"""
-    returns_data = {}
+    """Create correlation heatmap of daily returns"""
+    n_strategies = len(alphas)
     
-    for i, alpha in enumerate(alphas):
-        capital_ret = alpha.get_zero_filtered_stats()["capital_ret"]
-        returns_data[strategy_names[i]] = capital_ret
+    # Collect all daily returns
+    returns_dict = {}
+    for alpha, name in zip(alphas, strategy_names):
+        returns_dict[name] = alpha.get_zero_filtered_stats()["capital_ret"]
     
-    returns_df = pd.DataFrame(returns_data)
+    returns_df = pd.DataFrame(returns_dict)
     correlation_matrix = returns_df.corr()
     
-    plt.figure(figsize=(10, 8))
-    mask = np.triu(np.ones_like(correlation_matrix, dtype=bool))
+    # Dynamic figure size based on number of strategies
+    figsize = max(12, n_strategies * 0.8), max(8, n_strategies * 0.6)
+    plt.figure(figsize=figsize)
     
+    # Create heatmap with adjusted font sizes
+    annot_fontsize = max(8, min(12, 100 // n_strategies))
     sns.heatmap(correlation_matrix, 
                 annot=True, 
-                cmap='RdBu_r', 
+                cmap='coolwarm', 
                 center=0,
                 square=True,
-                fmt='.3f',
-                cbar_kws={"shrink": .8},
-                vmin=-1, vmax=1,
-                mask=mask)
+                linewidths=0.5,
+                annot_kws={'size': annot_fontsize},
+                fmt='.3f')
     
-    plt.title('Strategy Returns Correlation Heatmap', fontsize=16, fontweight='bold', pad=20)
-    plt.xlabel('Strategies', fontsize=12, fontweight='bold')
-    plt.ylabel('Strategies', fontsize=12, fontweight='bold')
+    plt.title(f'Strategy Return Correlations - {n_strategies} Strategies', fontsize=16)
     plt.xticks(rotation=45, ha='right')
     plt.yticks(rotation=0)
     plt.tight_layout()
-    
-    plt.savefig('./images/correlation_heatmap.png', dpi=300, bbox_inches='tight')
+    plt.savefig('./images/return_correlation_heatmap.png', dpi=300, bbox_inches='tight')
     plt.show()
+
+def plot_daily_returns_distribution(alphas, strategy_names):
+    """Create distribution plots of daily returns"""
+    n_strategies = len(alphas)
     
-    return correlation_matrix
+    # Calculate subplot grid dimensions
+    n_cols = min(4, n_strategies)
+    n_rows = (n_strategies + n_cols - 1) // n_cols
+    
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(5*n_cols, 4*n_rows))
+    if n_strategies == 1:
+        axes = [axes]
+    elif n_rows == 1:
+        axes = [axes]
+    else:
+        axes = axes.flatten()
+    
+    colors = plt.cm.tab10(np.linspace(0, 1, n_strategies)) if n_strategies <= 10 else plt.cm.tab20(np.linspace(0, 1, n_strategies))
+    
+    for i, (alpha, name) in enumerate(zip(alphas, strategy_names)):
+        ax = axes[i] if n_strategies > 1 else axes[0]
+        capital_ret = alpha.get_zero_filtered_stats()["capital_ret"]
+        
+        # Plot histogram and KDE
+        ax.hist(capital_ret, bins=50, alpha=0.7, density=True, color=colors[i], edgecolor='black', linewidth=0.5)
+        
+        # Add statistics text
+        mean_ret = capital_ret.mean()
+        std_ret = capital_ret.std()
+        skew = capital_ret.skew()
+        kurt = capital_ret.kurtosis()
+        
+        ax.axvline(mean_ret, color='red', linestyle='--', alpha=0.8, label=f'Mean: {mean_ret:.4f}')
+        ax.set_title(f'{name}\nSkew: {skew:.3f}, Kurt: {kurt:.3f}', fontsize=12)
+        ax.set_xlabel('Daily Return')
+        ax.set_ylabel('Density')
+        ax.legend(fontsize=10)
+        ax.grid(True, alpha=0.3)
+    
+    # Hide empty subplots
+    for i in range(n_strategies, len(axes)):
+        axes[i].set_visible(False)
+    
+    plt.suptitle(f'Daily Returns Distribution - {n_strategies} Strategies', fontsize=16)
+    plt.tight_layout()
+    plt.savefig('./images/daily_returns_distribution.png', dpi=300, bbox_inches='tight')
+    plt.show()
 
 def plot_permuted_vs_actual_performance(actual_alphas, strategy_names, permuted_results_list):
-    """Compare actual strategy performance vs performance on permuted data"""
-    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+    """Create box plots comparing actual vs permuted performance"""
+    n_strategies = len(actual_alphas)
     
-    for strategy_idx in range(3):
-        ax = axes[strategy_idx]
+    # Calculate subplot grid - use 2 columns for better layout
+    n_cols = min(2, n_strategies)
+    n_rows = (n_strategies + n_cols - 1) // n_cols
+    
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(8*n_cols, 6*n_rows))
+    if n_strategies == 1:
+        axes = [axes]
+    elif n_rows == 1 and n_cols > 1:
+        axes = list(axes)
+    elif n_rows > 1:
+        axes = axes.flatten()
+    else:
+        axes = [axes]
+    
+    colors = plt.cm.tab10(np.linspace(0, 1, n_strategies)) if n_strategies <= 10 else plt.cm.tab20(np.linspace(0, 1, n_strategies))
+    
+    for i, (actual_alpha, strategy_name) in enumerate(zip(actual_alphas, strategy_names)):
+        ax = axes[i] if len(axes) > 1 else axes[0]
         
-        actual_alpha = actual_alphas[strategy_idx]
-        actual_capital_ret = actual_alpha.get_zero_filtered_stats()["capital_ret"]
-        actual_cum_returns = (1 + actual_capital_ret).cumprod()
+        # Get actual performance
+        actual_stats = actual_alpha.get_zero_filtered_stats()
+        actual_capital_ret = actual_stats["capital_ret"]
+        actual_sharpe = (actual_capital_ret.mean() / actual_capital_ret.std()) * np.sqrt(252)
         
-        ax.plot(actual_cum_returns.index, actual_cum_returns.values, 
-                color='red', linewidth=3, label='Actual Data', alpha=0.9)
+        # Collect permuted Sharpe ratios for this strategy
+        permuted_sharpes = []
+        for perm_results in permuted_results_list:
+            if i < len(perm_results):  # Check if this strategy exists in permuted results
+                perm_capital_ret = perm_results[i].get_zero_filtered_stats()["capital_ret"]
+                perm_sharpe = (perm_capital_ret.mean() / perm_capital_ret.std()) * np.sqrt(252)
+                permuted_sharpes.append(perm_sharpe)
         
-        for perm_idx, permuted_alphas in enumerate(permuted_results_list):
-            perm_alpha = permuted_alphas[strategy_idx]
-            perm_capital_ret = perm_alpha.get_zero_filtered_stats()["capital_ret"]
-            perm_cum_returns = (1 + perm_capital_ret).cumprod()
+        if permuted_sharpes:
+            # Create box plot
+            box_plot = ax.boxplot([permuted_sharpes], positions=[1], widths=0.6, 
+                                patch_artist=True, medianprops={'color': 'black', 'linewidth': 2})
+            box_plot['boxes'][0].set_facecolor(colors[i])
+            box_plot['boxes'][0].set_alpha(0.7)
             
-            ax.plot(perm_cum_returns.index, perm_cum_returns.values, 
-                    color='gray', linewidth=1, alpha=0.6, 
-                    label='Permuted Data' if perm_idx == 0 else "")
+            # Add actual performance as red line
+            ax.axhline(y=actual_sharpe, color='red', linestyle='-', linewidth=3, 
+                      label=f'Actual: {actual_sharpe:.3f}')
+            
+            # Calculate p-value (proportion of permuted results >= actual)
+            p_value = np.mean(np.array(permuted_sharpes) >= actual_sharpe)
+            
+            # Add statistics
+            median_perm = np.median(permuted_sharpes)
+            ax.text(0.5, ax.get_ylim()[1] * 0.95, 
+                   f'Actual: {actual_sharpe:.3f}\nMedian Null: {median_perm:.3f}\np-value: {p_value:.3f}',
+                   ha='center', va='top', fontsize=11, 
+                   bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
         
-        ax.set_title(f'{strategy_names[strategy_idx]}', fontsize=12, fontweight='bold')
-        ax.set_xlabel('Date', fontsize=10)
-        ax.set_ylabel('Cumulative Returns', fontsize=10)
+        ax.set_title(f'{strategy_name}', fontsize=14, fontweight='bold')
+        ax.set_ylabel('Sharpe Ratio')
+        ax.set_xlabel('Null Distribution')
         ax.grid(True, alpha=0.3)
-        ax.legend()
-        ax.tick_params(axis='x', rotation=45)
+        ax.set_xticks([1])
+        ax.set_xticklabels(['Permuted'])
+        
+        if permuted_sharpes:
+            ax.legend()
     
-    plt.suptitle('Actual vs Permuted Data Performance Comparison', 
-                 fontsize=16, fontweight='bold', y=1.02)
+    # Hide empty subplots
+    for i in range(n_strategies, len(axes)):
+        if i < len(axes):
+            axes[i].set_visible(False)
+    
+    plt.suptitle(f'Actual vs Permuted Performance - {n_strategies} Strategies', fontsize=16)
     plt.tight_layout()
-    plt.savefig('./images/actual_vs_permuted_performance.png', dpi=300, bbox_inches='tight')
+    plt.savefig('./images/permuted_vs_actual_performance.png', dpi=300, bbox_inches='tight')
     plt.show()
+
+def print_summary_statistics(alphas, strategy_names, benchmark_returns=None):
+    """Print comprehensive summary statistics for all strategies"""
+    print("\n" + "="*100)
+    print(f"PERFORMANCE SUMMARY - {len(alphas)} STRATEGIES")
+    print("="*100)
+    
+    # Create summary DataFrame
+    summary_data = []
+    
+    for i, (alpha, name) in enumerate(zip(alphas, strategy_names)):
+        stats = alpha.get_zero_filtered_stats()
+        capital_ret = stats["capital_ret"]
+        
+        # Calculate metrics
+        annual_return = capital_ret.mean() * 252
+        annual_vol = capital_ret.std() * np.sqrt(252)
+        sharpe_ratio = annual_return / annual_vol if annual_vol > 0 else 0
+        
+        # Calculate drawdown
+        cumulative = (1 + capital_ret).cumprod()
+        rolling_max = cumulative.expanding().max()
+        drawdown = (cumulative - rolling_max) / rolling_max
+        max_drawdown = drawdown.min()
+        
+        # Calculate Calmar ratio
+        calmar_ratio = annual_return / abs(max_drawdown) if max_drawdown != 0 else 0
+        
+        # Calculate additional metrics
+        skewness = capital_ret.skew()
+        kurtosis = capital_ret.kurtosis()
+        
+        # Win rate
+        win_rate = (capital_ret > 0).mean()
+        
+        # Best and worst days
+        best_day = capital_ret.max()
+        worst_day = capital_ret.min()
+        
+        summary_data.append({
+            'Strategy': name,
+            'Annual Return': f"{annual_return:.2%}",
+            'Annual Volatility': f"{annual_vol:.2%}",
+            'Sharpe Ratio': f"{sharpe_ratio:.3f}",
+            'Max Drawdown': f"{max_drawdown:.2%}",
+            'Calmar Ratio': f"{calmar_ratio:.3f}",
+            'Skewness': f"{skewness:.3f}",
+            'Kurtosis': f"{kurtosis:.3f}",
+            'Win Rate': f"{win_rate:.2%}",
+            'Best Day': f"{best_day:.2%}",
+            'Worst Day': f"{worst_day:.2%}"
+        })
+    
+    # Create and display DataFrame
+    summary_df = pd.DataFrame(summary_data)
+    print(summary_df.to_string(index=False))
+    
+    # Print benchmark comparison if available
+    if benchmark_returns is not None:
+        print(f"\n{'='*50}")
+        print("BENCHMARK COMPARISON (S&P 500)")
+        print(f"{'='*50}")
+        
+        bench_annual_return = benchmark_returns.mean() * 252
+        bench_annual_vol = benchmark_returns.std() * np.sqrt(252)
+        bench_sharpe = bench_annual_return / bench_annual_vol if bench_annual_vol > 0 else 0
+        
+        bench_cumulative = (1 + benchmark_returns).cumprod()
+        bench_rolling_max = bench_cumulative.expanding().max()
+        bench_drawdown = (bench_cumulative - bench_rolling_max) / bench_rolling_max
+        bench_max_drawdown = bench_drawdown.min()
+        
+        print(f"Benchmark Annual Return: {bench_annual_return:.2%}")
+        print(f"Benchmark Annual Volatility: {bench_annual_vol:.2%}")
+        print(f"Benchmark Sharpe Ratio: {bench_sharpe:.3f}")
+        print(f"Benchmark Max Drawdown: {bench_max_drawdown:.2%}")
+        
+        print(f"\n{'='*30}")
+        print("STRATEGY RANKINGS BY SHARPE RATIO")
+        print(f"{'='*30}")
+        
+        # Sort strategies by Sharpe ratio
+        strategy_sharpes = []
+        for i, (alpha, name) in enumerate(zip(alphas, strategy_names)):
+            capital_ret = alpha.get_zero_filtered_stats()["capital_ret"]
+            annual_return = capital_ret.mean() * 252
+            annual_vol = capital_ret.std() * np.sqrt(252)
+            sharpe_ratio = annual_return / annual_vol if annual_vol > 0 else 0
+            strategy_sharpes.append((name, sharpe_ratio))
+        
+        strategy_sharpes.sort(key=lambda x: x[1], reverse=True)
+        
+        for rank, (name, sharpe) in enumerate(strategy_sharpes, 1):
+            excess_sharpe = sharpe - bench_sharpe
+            print(f"{rank:2d}. {name:<25} | Sharpe: {sharpe:6.3f} | Excess: {excess_sharpe:+6.3f}")
+    
+    print("\n" + "="*100)
 
 def create_comprehensive_results_table(alphas, strategy_names):
     """Create comprehensive results table with statistical tests"""
@@ -521,47 +721,53 @@ def main():
     
     print("Running strategy simulations")
     
-    # Strategy 1: Volume-based Long-Short
-    print("Running Gene 1: Volume-based Long-Short")
-    g1 = Gene.str_to_gene("ls_25/75(neg(mean_12(cszscre(div(mult(volume,minus(minus(close,low),minus(high,close))),minus(high,low))))))")
-    alpha1 = GeneticAlpha(insts=tickers, dfs=ticker_dfs, start=period_start, end=period_end, genome=g1)
-    df1 = alpha1.run_simulation()
+    # Define all 12 strategies (3 existing + 9 from comments)
+    strategies = [
+        # Original 3 strategies
+        ("ls_25/75(neg(mean_12(cszscre(div(mult(volume,minus(minus(close,low),minus(high,close))),minus(high,low))))))", "Gene 1: Volume-based Long-Short"),
+        ("neg(mean_12(minus(const_1,div(open,close))))", "Gene 2: Open-Close Reversal"),
+        ("plus(ite(gt(mean_10(close),mean_50(close)),const_1,const_0),ite(gt(mean_20(close),mean_100(close)),const_1,const_0),ite(gt(mean_50(close),mean_200(close)),const_1,const_0))", "Gene 3: Multi-Timeframe Momentum"),
+        
+        # Candidate strategies (potentially profitable)
+        ("ls_25/75(tsrank_11(tsrank_24(tsmin_15(obv_16()))))", "Gene 4: OBV Triple Rank"),
+        ("ls_25/75(cov_10(cszscre(kurt_23(grssret_13())),cor_20(netret_13(),abs(obv_21()))))", "Gene 5: Kurtosis-OBV Correlation"),
+        ("ls_25/75(recpcal(std_15(neg(volatility_10()))))", "Gene 6: Inverse Volatility Std"),
+        ("ls_25/75(tsrank_10(kurt_19(minus(logret_16(),pow_3(sign(grssret_18()))))))", "Gene 7: Kurtosis Log-Return"),
+        ("ls_25/75(pow_3(sign(mult(minus(logret_16(),grssret_25()),delay_5(logret_22())))))", "Gene 8: Delayed Return Signal"),
+        
+        # Money losing strategies (for comparison)
+        ("ls_25/75(kentau_17(cov_11(pow_4(open),cov_12(addv_13(),volatility_20())),delay_5(addv_15())))", "Gene 9: Kendall Tau Complex"),
+        ("ls_25/75(minus(high,tsrank_11(tsrank_24(tsmin_15(obv_16())))))", "Gene 10: High minus OBV Rank"),
+        ("ls_25/75(delta_4(sum_25(minus(high,minus(cov_10(high,close),tsargmin_24(high))))))", "Gene 11: High-Close Delta Sum"),
+        ("ls_25/75(plus(median_14(close),logret_12(),const_8,plus(high,logret_12(),const_8,volatility_25())))", "Gene 12: Multi-Component Plus")
+    ]
     
-    # Apply transaction costs
-    alpha1 = apply_transaction_costs_to_alpha(alpha1, spy_volatility)
+    alphas = []
+    strategy_names = []
     
-    perf1 = alpha1.get_perf_stats(plot=False, gene_factor=1)
-    print("Gene 1 Results:")
-    print(df1)
-
-    # Strategy 2: Open-Close Reversal
-    print("Running Gene 2: Open-Close Reversal")
-    g2 = Gene.str_to_gene("neg(mean_12(minus(const_1,div(open,close))))")
-    alpha2 = GeneticAlpha(insts=tickers, dfs=ticker_dfs, start=period_start, end=period_end, genome=g2)
-    df2 = alpha2.run_simulation()
+    # Run all strategies
+    for i, (gene_str, name) in enumerate(strategies):
+        print(f"Running {name}")
+        try:
+            gene = Gene.str_to_gene(gene_str)
+            alpha = GeneticAlpha(insts=tickers, dfs=ticker_dfs, start=period_start, end=period_end, genome=gene)
+            df = alpha.run_simulation()
+            
+            # Apply transaction costs
+            alpha = apply_transaction_costs_to_alpha(alpha, spy_volatility)
+            
+            perf = alpha.get_perf_stats(plot=False, gene_factor=i+1)
+            print(f"{name} Results:")
+            print(df)
+            
+            alphas.append(alpha)
+            strategy_names.append(name)
+            
+        except Exception as e:
+            print(f"Error running {name}: {e}")
+            continue
     
-    # Apply transaction costs
-    alpha2 = apply_transaction_costs_to_alpha(alpha2, spy_volatility)
-    
-    perf2 = alpha2.get_perf_stats(plot=False, gene_factor=2)
-    print("Gene 2 Results:")
-    print(df2)
-
-    # Strategy 3: Multi-Timeframe Momentum
-    print("Running Gene 3: Multi-Timeframe Momentum")
-    g3 = Gene.str_to_gene("plus(ite(gt(mean_10(close),mean_50(close)),const_1,const_0),ite(gt(mean_20(close),mean_100(close)),const_1,const_0),ite(gt(mean_50(close),mean_200(close)),const_1,const_0))")
-    alpha3 = GeneticAlpha(insts=tickers, dfs=ticker_dfs, start=period_start, end=period_end, genome=g3)
-    df3 = alpha3.run_simulation()
-    
-    # Apply transaction costs
-    alpha3 = apply_transaction_costs_to_alpha(alpha3, spy_volatility)
-    
-    perf3 = alpha3.get_perf_stats(plot=False, gene_factor=3)
-    print("Gene 3 Results:")
-    print(df3)
-
-    alphas = [alpha1, alpha2, alpha3]
-    strategy_names = ['Gene 1: Volume-based Long-Short', 'Gene 2: Open-Close Reversal', 'Gene 3: Multi-Timeframe Momentum']
+    print(f"Successfully ran {len(alphas)} strategies")
     
     print("Plotting combined returns with S&P 500 benchmark")
     plot_combined_returns_with_benchmark(alphas, strategy_names, spy_returns)
@@ -584,7 +790,7 @@ def main():
     print("Plotting return distributions and QQ plots")
     plot_return_distributions_and_qq(alphas, strategy_names)
     
-    ##
+    # Permutation testing with all strategies
     try:
         permuted_datasets = load_pickle("permute.obj")
         
@@ -597,13 +803,19 @@ def main():
             for ticker in tickers:
                 perm_ticker_dfs.update({ticker+"_"+k: v for k, v in perm_ticker_dfs[ticker].to_dict(orient="series").items()})
             
-            perm_alpha1 = GeneticAlpha(insts=tickers, dfs=perm_ticker_dfs, start=period_start, end=period_end, genome=g1)
-            perm_alpha2 = GeneticAlpha(insts=tickers, dfs=perm_ticker_dfs, start=period_start, end=period_end, genome=g2)
-            perm_alpha3 = GeneticAlpha(insts=tickers, dfs=perm_ticker_dfs, start=period_start, end=period_end, genome=g3)
+            perm_alphas = []
+            for gene_str, _ in strategies:
+                try:
+                    gene = Gene.str_to_gene(gene_str)
+                    perm_alpha = GeneticAlpha(insts=tickers, dfs=perm_ticker_dfs, start=period_start, end=period_end, genome=gene)
+                    perm_alpha.run_simulation()
+                    perm_alphas.append(perm_alpha)
+                except:
+                    perm_alphas.append(None)
             
-            permuted_results_list.append([perm_alpha1, perm_alpha2, perm_alpha3])
+            permuted_results_list.append(perm_alphas)
         
-        print("   Plotting actual vs permuted performance")
+        print("Plotting actual vs permuted performance")
         plot_permuted_vs_actual_performance(alphas, strategy_names, permuted_results_list)
         
     except FileNotFoundError:
@@ -614,34 +826,6 @@ def main():
     
     with pd.option_context('display.max_columns', None, 'display.width', None, 'display.max_colwidth', None):
         print(comprehensive_results.to_string(index=False))
-    
-    # comprehensive_results.to_csv('./results_with_statistical_tests.csv', index=False)
-    
-    # print("Generated files:")
-    # print("- ./images/combined_returns_with_benchmark.png")
-    # print("- ./images/correlation_heatmap.png") 
-    # print("- ./images/rolling_drawdown.png")
-    # print("- ./images/rolling_calmar.png")
-    # print("- ./images/rolling_volatility.png")
-    # print("- ./images/rolling_sharpe.png")
-    # print("- ./images/return_distribution_qq_1.png")
-    # print("- ./images/return_distribution_qq_2.png")
-    # print("- ./images/return_distribution_qq_3.png")
-    # if Path("permute.obj").exists():
-    #     print("- ./images/actual_vs_permuted_performance.png")
-    # print("- ./results_with_statistical_tests.csv")
-    
-    # print("\nStrategy Return Correlations:")
-    # print(correlation_matrix)
-    
-    # print(f"\nTransaction Cost Regime Information:")
-    # print(f"S&P 500 volatility mean: {spy_volatility.mean():.3f}")
-    # print(f"S&P 500 volatility std: {spy_volatility.std():.3f}")
-    # print("Transaction cost regimes applied:")
-    # print("- Low vol (<0.15): 0.2% transaction cost")
-    # print("- Normal (0.15-0.25): 0.35% transaction cost")
-    # print("- Walking on ice (0.25-0.35): 0.4% transaction cost") 
-    # print("- Crisis (>0.35): 0.5% transaction cost")
     
     # Calculate volatility regime distribution
     low_vol_pct = (spy_volatility < 0.15).sum() / len(spy_volatility) * 100
@@ -654,6 +838,8 @@ def main():
     print(f"- Normal vol periods: {normal_vol_pct:.1f}%") 
     print(f"- Walking on ice periods: {walking_ice_pct:.1f}%")
     print(f"- Crisis periods: {crisis_pct:.1f}%")
+    
+    print_summary_statistics(alphas, strategy_names, spy_returns)
     
     return comprehensive_results
 
